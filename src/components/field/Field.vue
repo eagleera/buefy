@@ -1,43 +1,49 @@
 <template>
     <div class="field" :class="[rootClasses, fieldType()]">
-        <div
-            v-if="horizontal"
-            class="field-label"
-            :class="[customClass, fieldLabelSize]">
-            <label
-                v-if="hasLabel"
-                :for="labelFor"
-                :class="customClass"
-                class="label" >
-                <slot v-if="$slots.label" name="label"/>
-                <template v-else>{{ label }}</template>
-            </label>
-        </div>
-        <template v-else>
-            <label
-                v-if="hasLabel"
-                :for="labelFor"
-                :class="customClass"
-                class="label">
-                <slot v-if="$slots.label" name="label"/>
-                <template v-else>{{ label }}</template>
-            </label>
-        </template>
-        <b-field-body
-            v-if="horizontal"
-            :message="newMessage ? formattedMessage : ''"
-            :type="newType">
-            <slot/>
-        </b-field-body>
-        <template v-else>
-            <slot/>
-        </template>
-        <p
-            v-if="newMessage && !horizontal"
-            v-html="formattedMessage"
-            class="help"
-            :class="newType"
-        />
+        <transition name="fade" mode="out-in">
+            <div v-if="loading" class="skeleton skeleton-label" />
+            <div
+                v-if="horizontal && !loading"
+                class="field-label"
+                :class="[customClass, fieldLabelSize]">
+                <label
+                    v-if="hasLabel"
+                    :for="labelFor"
+                    :class="customClass"
+                    class="label" >
+                    <slot v-if="$slots.label" name="label"/>
+                    <template v-else>{{ label }}</template>
+                </label>
+            </div>
+            <template v-if="!horizontal && !loading">
+                <label
+                    v-if="hasLabel"
+                    :for="labelFor"
+                    :class="customClass"
+                    class="label">
+                    <slot v-if="$slots.label" name="label"/>
+                    <template v-else>{{ label }}</template>
+                </label>
+            </template>
+        </transition>
+        <transition name="fade" mode="out-in">
+            <div v-if="loading" class="skeleton skeleton-field" />
+            <b-field-body
+                v-if="horizontal && !loading"
+                :message="newMessage ? formattedMessage : ''"
+                :type="newType">
+                <slot/>
+            </b-field-body>
+            <template v-if="!horizontal && !loading">
+                <slot/>
+            </template>
+            <p
+                v-if="newMessage && !horizontal && !loading"
+                v-html="formattedMessage"
+                class="help"
+                :class="newType"
+            />
+        </transition>
     </div>
 </template>
 
@@ -68,6 +74,10 @@ export default {
         labelPosition: {
             type: String,
             default: () => { return config.defaultFieldLabelPosition }
+        },
+        loading: {
+            type: Boolean,
+            default: false
         }
     },
     data() {
